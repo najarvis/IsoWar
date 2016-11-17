@@ -13,6 +13,19 @@ public class Vector2d {
 		this(0, 0);
 	}
 	
+	@Override
+	public String toString() {
+		return "Vector2d: (" + x + ", " + y + ")";
+	}
+	
+	public double[] unpack() {
+		return new double[]{x, y};
+	}
+	
+	public float[] unpackf() {
+		return new float[]{(float)x, (float)y};
+	}
+	
 	// Adds another vector to the current one and returns a new vector
 	public Vector2d add(Vector2d other) {
 		return new Vector2d(x + other.x, y + other.y);
