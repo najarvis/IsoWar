@@ -2,9 +2,9 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 
-public class Entity {
+public class Entity implements Comparable{
 	
-	public Vector2d pos;
+	public Vector3d pos;
 	public double orientation;
 	public Image[] sprites;
 	
@@ -13,7 +13,7 @@ public class Entity {
 	
 	boolean player;
 	
-	public Entity(Vector2d pos, Image[] sprites, double orientation, boolean player) {
+	public Entity(Vector3d pos, Image[] sprites, double orientation, boolean player) {
 		this.pos = pos;
 		this.sprites = sprites;
 		this.orientation = orientation;
@@ -23,18 +23,23 @@ public class Entity {
 	}
 	
 	// No provided orientation
-	public Entity(Vector2d pos, Image[] sprites, boolean player) {
+	public Entity(Vector3d pos, Image[] sprites, boolean player) {
 		this(pos, sprites, 0, player);
 	}
 	
 	// Position in component form
 	public Entity(double x, double y, Image[] sprites, double orientation, boolean player) {
-		this(new Vector2d(x, y), sprites, orientation, player);
+		this(new Vector3d(x, y), sprites, orientation, player);
 	}
 	
 	// Position in component form and no provided orientation
 	public Entity(double x, double y, Image[] sprites, boolean player){
-		this(new Vector2d(x, y), sprites, 0, player);
+		this(new Vector3d(x, y), sprites, 0, player);
+	}
+	
+	public Entity clone() {
+		globalID -= 1;
+		return new Entity(pos, sprites, orientation, player);
 	}
 	
 	@Override
@@ -43,7 +48,11 @@ public class Entity {
 	}
 	
 	private Vector2d IsoToEuc() {
-		return new Vector2d(0.5 * (pos.x - pos.y), 0.5 * (pos.x + pos.y));
+		return new Vector2d(0.5 * (pos.x - pos.y), 0.5 * (pos.x + pos.y) - pos.z);
+	}
+	
+	public void fire(){
+		
 	}
 	
 	public void update(GameContainer container, int delta) {
@@ -81,6 +90,10 @@ public class Entity {
 				}
 			}
 			
+			if (input.isKeyDown(Input.KEY_SPACE)){
+				fire();
+			}
+			
 		} else {
 			orientation += (delta * 0.001);
 			if (orientation > 1) orientation -= (int) orientation;
@@ -91,6 +104,12 @@ public class Entity {
 	public void draw() {
 		Vector2d drawPos = IsoToEuc();
 		sprites[(int) (orientation * 8) % 8].draw((float) drawPos.x, (float) drawPos.y);
+	}
+
+	@Override
+	public int compareTo(Object o) {
+		if (!(o instanceof Entity)) return 0;
+		return (int) (((this.pos.x + this.pos.y) - (((Entity)o).pos.x + ((Entity)o).pos.y)) * 1000);
 	}
 	
 }
