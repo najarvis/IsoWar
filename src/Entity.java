@@ -16,6 +16,8 @@ public class Entity implements Comparable{
 	public int speed;
 	private int numFrames;
 	
+	public boolean selected;
+	
 	public Entity(Vector3d pos, Image[] sprites, double orientation) {
 		this.pos = pos;
 		this.sprites = sprites;
@@ -24,6 +26,8 @@ public class Entity implements Comparable{
 		this.orientation = orientation;
 		globalID += 1;
 		this.id = globalID;
+
+		this.selected = false;
 		
 		// AI stuff down here
 		this.destination = this.pos.clone();
