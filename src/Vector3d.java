@@ -31,6 +31,10 @@ public class Vector3d {
 		return new float[]{(float)x, (float)y, (float)z};
 	}
 	
+	public Vector3d clone() {
+		return new Vector3d(this.x, this.y, this.z);
+	}
+	
 	// Adds another vector to the current one and returns a new vector
 	public Vector3d add(Vector3d other) {
 		return new Vector3d(x + other.x, y + other.y, z + other.z);
@@ -48,7 +52,7 @@ public class Vector3d {
 	
 	// Returns a unit-length vector with the same direction of the current vector
 	public Vector3d normalize() {
-		return mul(getMagnitude());
+		return mul(1 / getMagnitude());
 	}
 	
 	// Returns the distance between the current vector and another vector supplied.
@@ -58,6 +62,6 @@ public class Vector3d {
 	
 	// Returns the vector from the current vector to the other vector.
 	public Vector3d fromOther(Vector3d other) {
-		return add(other.mul(-1));
+		return other.add(this.mul(-1));
 	}
 }

@@ -11,13 +11,16 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
 public class IsoWar extends BasicGame{
-
-	Image greenTankSheet;
+	
 	Image[] greenTankFrames;
-	Animation greenTankAnimation;
+	Image[] redTankFrames;
+	
+	Camera camera;
 	ArrayList<Entity> entities;
-	final int WIDTH = 1600,
-			  HEIGHT = 900;
+	final static int WIDTH = 1600,
+			         HEIGHT = 900;
+	
+	static AppGameContainer app;
 	
 	public IsoWar() {
 		super("IsoWar!");
@@ -25,8 +28,8 @@ public class IsoWar extends BasicGame{
 	
 	public static void main(String[] args) {
 		try {
-			AppGameContainer app = new AppGameContainer(new IsoWar());
-			app.setDisplayMode(1600, 900, false);
+			app = new AppGameContainer(new IsoWar());
+			app.setDisplayMode(WIDTH, HEIGHT, false);
 			app.start();
 		} catch (SlickException e) {
 			e.printStackTrace();
@@ -35,35 +38,39 @@ public class IsoWar extends BasicGame{
 	
 	@Override
 	public void init(GameContainer container) throws SlickException {
-		greenTankSheet = new Image("res/Tanks/GreenTankSheet.png");
+		Random random = new Random();
+		camera = new Camera(-WIDTH / 2, 0);
+		
+		Image greenTankSheet = new Image("res/Tanks/GreenTankSheet.png");
+		Image redTankSheet = new Image("res/Tanks/RedTankSheet.png");
 		
 		float scale = 0.125f;
 		greenTankSheet = greenTankSheet.getScaledCopy(scale);
+		redTankSheet = redTankSheet.getScaledCopy(scale);
 		
 		greenTankFrames = new Image[8];
+		redTankFrames = new Image[8];
 		for (int i = 0; i < 8; i++) {
 			greenTankFrames[i] = (greenTankSheet.getSubImage((int) (i * 256 * scale), 0, (int) (256 * scale), (int) (192 * scale)));
+			redTankFrames[i] = (redTankSheet.getSubImage((int) (i * 256 * scale), 0, (int) (256 * scale), (int) (192 * scale)));
 		}
 		
-		Random random = new Random();
 		entities = new ArrayList<Entity>();
-		entities.add(new Entity(20, 20, greenTankFrames, true));
+		Entity testing = new Entity(20, 20, redTankFrames);
+		testing.setDestination(new Vector3d(500, 300));
+		entities.add(testing);
 		/*
 		entities.add(new Entity(400, 20, greenTankFrames, false));
 		entities.add(new Entity(300, 250, greenTankFrames, false));
 		entities.add(new Entity(400, 250, greenTankFrames, false));*/
+		
 		for (int i = 0; i < 20; i++){
-			entities.add(new Entity(random.nextInt(800), random.nextInt(450), greenTankFrames, false));
+//			Entity toAdd = ;
+//			toAdd.setDestination(new Vector3d(500, 300));
+//			entities.add(new Entity(random.nextInt(800), random.nextInt(450), greenTankFrames));
 		}
 		
-	}
-	
-	@Override
-	public void update(GameContainer container, int delta) throws SlickException {
-		for (Entity e : entities) {
-			e.update(container, delta);
-		}
-		sortEntities();
+		
 	}
 	
 	/* Sorts entities by their position on the screen for rendering
@@ -72,6 +79,23 @@ public class IsoWar extends BasicGame{
 	 */
 	private void sortEntities() {
 		quicksort(entities, 0, entities.size() - 1);
+	}
+	
+	@Override
+	public void update(GameContainer container, int delta) throws SlickException {
+		double timePassedSeconds = delta * 0.001;
+		for (Entity e : entities) {
+			e.update(container, timePassedSeconds);
+		}
+		sortEntities();
+	}
+	
+	public void render(GameContainer container, Graphics g) throws SlickException {
+		g.setBackground(Color.pink);
+		for (Entity e : entities) {
+			e.draw(camera);
+//			app.setTitle(String.valueOf(e.pos.distanceTo(e.destination)));
+		}
 	}
 	
 	/* Quicksort algorithm, source: Wikipedia
@@ -87,6 +111,7 @@ public class IsoWar extends BasicGame{
 		}
 	}
 	
+	/* Part of the quicksort algorithm*/
 	private int partition(ArrayList<Entity> A, int low, int high){
 		Entity pivot = A.get(high);
 		int i = low;
@@ -103,12 +128,6 @@ public class IsoWar extends BasicGame{
 		A.set(high, tmp);
 		return i;
 	}
-	
-	public void render(GameContainer container, Graphics g) throws SlickException {
-		g.setBackground(Color.pink);
-		for (Entity e : entities) {
-			e.draw();
-		}
-	}
+
 
 }

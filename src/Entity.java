@@ -5,41 +5,46 @@ import org.newdawn.slick.Input;
 public class Entity implements Comparable{
 	
 	public Vector3d pos;
+	public Vector3d destination;
+	
 	public double orientation;
 	public Image[] sprites;
 	
 	private static int globalID = 0;
 	public int id;
 	
-	boolean player;
+	public int speed;
 	
-	public Entity(Vector3d pos, Image[] sprites, double orientation, boolean player) {
+	public Entity(Vector3d pos, Image[] sprites, double orientation) {
 		this.pos = pos;
 		this.sprites = sprites;
 		this.orientation = orientation;
 		globalID += 1;
 		this.id = globalID;
-		this.player = player;
+		
+		// AI stuff down here
+		this.destination = this.pos.clone();
+		this.speed = 50; // Pixels per second
 	}
 	
 	// No provided orientation
-	public Entity(Vector3d pos, Image[] sprites, boolean player) {
-		this(pos, sprites, 0, player);
+	public Entity(Vector3d pos, Image[] sprites) {
+		this(pos, sprites, 0);
 	}
 	
 	// Position in component form
-	public Entity(double x, double y, Image[] sprites, double orientation, boolean player) {
-		this(new Vector3d(x, y), sprites, orientation, player);
+	public Entity(double x, double y, Image[] sprites, double orientation) {
+		this(new Vector3d(x, y), sprites, orientation);
 	}
 	
 	// Position in component form and no provided orientation
-	public Entity(double x, double y, Image[] sprites, boolean player){
-		this(new Vector3d(x, y), sprites, 0, player);
+	public Entity(double x, double y, Image[] sprites){
+		this(new Vector3d(x, y), sprites, 0);
 	}
 	
 	public Entity clone() {
 		globalID -= 1;
-		return new Entity(pos, sprites, orientation, player);
+		return new Entity(pos, sprites, orientation);
 	}
 	
 	@Override
@@ -47,62 +52,31 @@ public class Entity implements Comparable{
 		return "ENTITY - ID: " + id + "/" + globalID + ", Position: " + pos + ", Orientation: " + orientation;
 	}
 	
-	private Vector2d IsoToEuc() {
-		return new Vector2d(0.5 * (pos.x - pos.y), 0.5 * (pos.x + pos.y) - pos.z);
+	private Vector2d IsoToEuc(Camera camera) {
+		return new Vector2d(0.5 * (pos.x - pos.y) - camera.pos.x,  0.5 * (pos.x + pos.y) - pos.z - camera.pos.y);
 	}
 	
 	public void fire(){
 		
 	}
 	
-	public void update(GameContainer container, int delta) {
-		if (player) {
-			Input input = container.getInput();
-			
-			if (input.isKeyDown(Input.KEY_D)) {
-				orientation = 0;
-				pos.x += 50 * (delta / 1000.0); 
-			}
-			
-			if (input.isKeyDown(Input.KEY_A)) {
-				orientation = 0.5;
-				pos.x -= 50 * (delta / 1000.0); 
-			}
-			
-			if (input.isKeyDown(Input.KEY_W)) {
-				orientation = 0.75;
-				pos.y -= 50 * (delta / 1000.0); 
-				if (input.isKeyDown(Input.KEY_D)){
-					orientation = 0.875;
-				} else if (input.isKeyDown(Input.KEY_A)){
-					orientation = 0.625;
-				}
-
-			}
-			
-			if (input.isKeyDown(Input.KEY_S)) {
-				orientation = 0.25;
-				pos.y += 50 * (delta / 1000.0); 
-				if (input.isKeyDown(Input.KEY_D)){
-					orientation = 0.125;
-				} else if (input.isKeyDown(Input.KEY_A)){
-					orientation = 0.375;
-				}
-			}
-			
-			if (input.isKeyDown(Input.KEY_SPACE)){
-				fire();
-			}
+	public void setDestination(Vector3d dest){
+		destination = dest;
+	}
+	
+	public void update(GameContainer container, double delta) {
+		
+		if (pos.distanceTo(destination) > delta * speed) { // Not at the destination yet
+			pos = pos.add(pos.fromOther(destination).normalize().mul(delta * speed));
 			
 		} else {
-			orientation += (delta * 0.001);
+			orientation += (delta);
 			if (orientation > 1) orientation -= (int) orientation;
-			
 		}
 	}
 	
-	public void draw() {
-		Vector2d drawPos = IsoToEuc();
+	public void draw(Camera camera) {
+		Vector2d drawPos = IsoToEuc(camera);
 		sprites[(int) (orientation * 8) % 8].draw((float) drawPos.x, (float) drawPos.y);
 	}
 

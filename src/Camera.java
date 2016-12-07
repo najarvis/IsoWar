@@ -10,4 +10,8 @@ public class Camera {
 		this(new Vector2d(x, y));
 	}
 	
+	public Camera(){
+		this(new Vector2d());
+	}
+	
 }
