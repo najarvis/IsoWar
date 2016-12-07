@@ -44,32 +44,41 @@ public class IsoWar extends BasicGame{
 		Image greenTankSheet = new Image("res/Tanks/GreenTankSheet.png");
 		Image redTankSheet = new Image("res/Tanks/RedTankSheet.png");
 		
-		float scale = 0.125f;
+		Image greenUnitImage = new Image("res/Units/GreenUnit.png");
+		Image redUnitImage = new Image("res/Units/RedUnit.png");
+		
+		float scale = 0.15f;
 		greenTankSheet = greenTankSheet.getScaledCopy(scale);
 		redTankSheet = redTankSheet.getScaledCopy(scale);
 		
+
+		
 		greenTankFrames = new Image[8];
 		redTankFrames = new Image[8];
+		
 		for (int i = 0; i < 8; i++) {
 			greenTankFrames[i] = (greenTankSheet.getSubImage((int) (i * 256 * scale), 0, (int) (256 * scale), (int) (192 * scale)));
 			redTankFrames[i] = (redTankSheet.getSubImage((int) (i * 256 * scale), 0, (int) (256 * scale), (int) (192 * scale)));
 		}
 		
+		scale = 0.25f;
+		greenUnitImage = greenUnitImage.getScaledCopy(scale);
+		redUnitImage = redUnitImage.getScaledCopy(scale);
+		
 		entities = new ArrayList<Entity>();
-		Entity testing = new Entity(20, 20, redTankFrames);
+		Tank testing = new Tank(20, 20, redTankFrames);
 		testing.setDestination(new Vector3d(500, 300));
 		entities.add(testing);
-		/*
-		entities.add(new Entity(400, 20, greenTankFrames, false));
-		entities.add(new Entity(300, 250, greenTankFrames, false));
-		entities.add(new Entity(400, 250, greenTankFrames, false));*/
 		
 		for (int i = 0; i < 20; i++){
-//			Entity toAdd = ;
-//			toAdd.setDestination(new Vector3d(500, 300));
-//			entities.add(new Entity(random.nextInt(800), random.nextInt(450), greenTankFrames));
+			Tank toAdd = new Tank(random.nextInt(800), random.nextInt(450), greenTankFrames);
+			toAdd.setDestination(new Vector3d(500, 300));
+			entities.add(toAdd);
+			
+			Unit toAdd2 = new Unit(random.nextInt(800), random.nextInt(450), new Image[] {redUnitImage});
+			toAdd2.setDestination(new Vector3d(500, 300));
+			entities.add(toAdd2);
 		}
-		
 		
 	}
 	
@@ -94,7 +103,6 @@ public class IsoWar extends BasicGame{
 		g.setBackground(Color.pink);
 		for (Entity e : entities) {
 			e.draw(camera);
-//			app.setTitle(String.valueOf(e.pos.distanceTo(e.destination)));
 		}
 	}
 	
@@ -117,13 +125,13 @@ public class IsoWar extends BasicGame{
 		int i = low;
 		for (int j = low; j < high; j++){
 			if (A.get(j).compareTo(pivot) <= 0){
-				Entity tmp = A.get(i).clone();
+				Entity tmp = A.get(i);
 				A.set(i, A.get(j));
 				A.set(j, tmp);
 				i += 1;
 			}
 		}
-		Entity tmp = A.get(i).clone();
+		Entity tmp = A.get(i);
 		A.set(i, A.get(high));
 		A.set(high, tmp);
 		return i;

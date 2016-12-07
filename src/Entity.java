@@ -14,10 +14,13 @@ public class Entity implements Comparable{
 	public int id;
 	
 	public int speed;
+	private int numFrames;
 	
 	public Entity(Vector3d pos, Image[] sprites, double orientation) {
 		this.pos = pos;
 		this.sprites = sprites;
+		this.numFrames = sprites.length;
+		
 		this.orientation = orientation;
 		globalID += 1;
 		this.id = globalID;
@@ -25,6 +28,7 @@ public class Entity implements Comparable{
 		// AI stuff down here
 		this.destination = this.pos.clone();
 		this.speed = 50; // Pixels per second
+		
 	}
 	
 	// No provided orientation
@@ -56,10 +60,6 @@ public class Entity implements Comparable{
 		return new Vector2d(0.5 * (pos.x - pos.y) - camera.pos.x,  0.5 * (pos.x + pos.y) - pos.z - camera.pos.y);
 	}
 	
-	public void fire(){
-		
-	}
-	
 	public void setDestination(Vector3d dest){
 		destination = dest;
 	}
@@ -77,7 +77,7 @@ public class Entity implements Comparable{
 	
 	public void draw(Camera camera) {
 		Vector2d drawPos = IsoToEuc(camera);
-		sprites[(int) (orientation * 8) % 8].draw((float) drawPos.x, (float) drawPos.y);
+		sprites[(int) (orientation * numFrames) % numFrames].draw((float) drawPos.x, (float) drawPos.y);
 	}
 
 	@Override
