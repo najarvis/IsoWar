@@ -19,6 +19,11 @@ public class Tank extends Entity {
 		this(pos, sprites, 0);
 	}
 	
+	public Tank clone(){
+		globalID -= 1;
+		return new Tank(pos, sprites, orientation);
+	}
+	
 	public void fire() {
 		
 	}

@@ -2,7 +2,7 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 
-public class Entity implements Comparable{
+public abstract class Entity implements Comparable{
 	
 	public Vector3d pos;
 	public Vector3d destination;
@@ -10,7 +10,7 @@ public class Entity implements Comparable{
 	public double orientation;
 	public Image[] sprites;
 	
-	private static int globalID = 0;
+	protected static int globalID = 0;
 	public int id;
 	
 	public int speed;
@@ -48,11 +48,6 @@ public class Entity implements Comparable{
 	// Position in component form and no provided orientation
 	public Entity(double x, double y, Image[] sprites){
 		this(new Vector3d(x, y), sprites, 0);
-	}
-	
-	public Entity clone() {
-		globalID -= 1; // Have to decrease the gloabalID by one because creating a new entity will increase it by 1, so the new entity will have a different ID number
-		return new Entity(pos, sprites, orientation);
 	}
 	
 	@Override
@@ -99,7 +94,9 @@ public class Entity implements Comparable{
 	@Override
 	public int compareTo(Object o) {
 		if (!(o instanceof Entity)) return 0;
-		return (int) (((this.pos.x + this.pos.y) - (((Entity)o).pos.x + ((Entity)o).pos.y)) * 1000);
+		Vector2d thisTestPos = new Vector2d(this.pos.x + this.sprites[0].getWidth() / 2, this.pos.y + this.sprites[0].getHeight());
+		Vector2d oTestPos = new Vector2d(((Entity)o).pos.x + ((Entity)o).sprites[0].getWidth() / 2, ((Entity)o).pos.y + ((Entity)o).sprites[0].getHeight());
+		return (int) (((thisTestPos.x + thisTestPos.y) - (oTestPos.x + oTestPos.y)) * 1000);
 	}
 	
 }

@@ -17,7 +17,10 @@ public class IsoWar extends BasicGame{
 	
 	Camera camera;
 	Input input;
+	
 	ArrayList<Entity> entities;
+	ArrayList<IsoTile> tiles;
+	
 	final static int WIDTH = 1600,
 			         HEIGHT = 900;
 	
@@ -48,11 +51,10 @@ public class IsoWar extends BasicGame{
 		Image greenUnitImage = new Image("res/Units/GreenUnit.png");
 		Image redUnitImage = new Image("res/Units/RedUnit.png");
 		
-		float scale = 0.125f;
+		
+		float scale = 0.25f;
 		greenTankSheet = greenTankSheet.getScaledCopy(scale);
 		redTankSheet = redTankSheet.getScaledCopy(scale);
-		
-
 		
 		greenTankFrames = new Image[8];
 		redTankFrames = new Image[8];
@@ -62,16 +64,28 @@ public class IsoWar extends BasicGame{
 			redTankFrames[i] = (redTankSheet.getSubImage((int) (i * 256 * scale), 0, (int) (256 * scale), (int) (192 * scale)));
 		}
 		
-		scale = 0.25f;
+		scale = 0.5f;
 		greenUnitImage = greenUnitImage.getScaledCopy(scale);
 		redUnitImage = redUnitImage.getScaledCopy(scale);
+
 		
+		// Add tiles
+		tiles = new ArrayList<IsoTile>();
+		
+		for (int y = -15; y < 15; y++){
+			for (int x = -15; x < 15; x++){
+				IsoTile toAdd = new IsoTile(new Vector3d(x * 128, y * 128), "DarkBase.png");
+				tiles.add(toAdd);
+			}
+		}
+		
+		// Add entities
 		entities = new ArrayList<Entity>();
 		Tank testing = new Tank(20, 20, redTankFrames);
 		testing.setDestination(new Vector3d(500, 300));
 		entities.add(testing);
 		
-		for (int i = 0; i < 20; i++){
+		for (int i = 0; i < 10; i++){
 			Tank toAdd = new Tank(random.nextInt(800), random.nextInt(450), greenTankFrames);
 			toAdd.setDestination(new Vector3d(500, 300));
 			entities.add(toAdd);
@@ -84,11 +98,23 @@ public class IsoWar extends BasicGame{
 			toAdd3.setDestination(new Vector3d(500, 300));
 			entities.add(toAdd3);
 		}
+
+		Image greenBuildingImage = new Image("res/Buildings/GreenBase.png");
+		greenBuildingImage = greenBuildingImage.getScaledCopy(0.5f);
+		
+		Image redBuildingImage = new Image("res/Buildings/RedBase.png");
+		redBuildingImage = redBuildingImage.getScaledCopy(0.5f);
+				
+		// Main Buildings
+		Building greenBase = new Building(IsoFuncs.EucToIso(new Vector2d(WIDTH - (redBuildingImage.getWidth() + 20), HEIGHT / 2 - redBuildingImage.getHeight() / 2), camera), new Image[] {greenBuildingImage}, 0);
+		entities.add(greenBase);
+		
+		Building redBase = new Building(IsoFuncs.EucToIso(new Vector2d(20, HEIGHT / 2 - redBuildingImage.getHeight() / 2), camera), new Image[] {redBuildingImage}, 0);
+		entities.add(redBase);
 		
 	}
 	
 	private void selectEntity(Vector2d clickPos) {
-		// TODO: Select Entity on mouse click
 		for (Entity e : entities){
 			if (e.testIntersection(clickPos, camera)){
 				e.selected = true;
@@ -121,11 +147,19 @@ public class IsoWar extends BasicGame{
 				e.update(container, timePassedSeconds);
 			}
 		}
+		
+		app.setTitle(IsoFuncs.EucToIso(new Vector2d(input.getMouseX(), input.getMouseY()), camera).toString());
+		
 		sortEntities();
 	}
 	
 	public void render(GameContainer container, Graphics g) throws SlickException {
 		g.setBackground(Color.pink);
+		
+		for (IsoTile t : tiles){
+			t.render(camera);
+		}
+		
 		for (Entity e : entities) {
 			e.draw(camera, g);
 		}

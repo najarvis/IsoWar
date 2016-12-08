@@ -14,8 +14,13 @@ public class IsoTile extends Tile {
 	 */
 	
 	
-	public IsoTile(Vector2d pos, String filename) throws SlickException {
+	public IsoTile(Vector3d pos, String filename) throws SlickException {
 		super(pos, filename);
+	}
+	
+	public void render(Camera camera){
+		Vector2d drawPos = IsoFuncs.IsoToEuc(pos, camera);
+		image.draw((float)drawPos.x, (float)drawPos.y);
 	}
 
 }
