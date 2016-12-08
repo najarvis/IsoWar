@@ -1,3 +1,4 @@
+import org.newdawn.slick.SlickException;
 
 public class IsoTile extends Tile {
 	/*        .   <>             | The values inside of the parenthesis are the coordinates
@@ -13,7 +14,7 @@ public class IsoTile extends Tile {
 	 */
 	
 	
-	public IsoTile(Vector2d pos, String filename) {
+	public IsoTile(Vector2d pos, String filename) throws SlickException {
 		super(pos, filename);
 	}
 

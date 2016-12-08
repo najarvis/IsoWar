@@ -51,7 +51,7 @@ public class Entity implements Comparable{
 	}
 	
 	public Entity clone() {
-		globalID -= 1;
+		globalID -= 1; // Have to decrease the gloabalID by one because creating a new entity will increase it by 1, so the new entity will have a different ID number
 		return new Entity(pos, sprites, orientation);
 	}
 	
@@ -60,9 +60,7 @@ public class Entity implements Comparable{
 		return "ENTITY - ID: " + id + "/" + globalID + ", Position: " + pos + ", Orientation: " + orientation;
 	}
 	
-	private Vector2d IsoToEuc(Camera camera) {
-		return new Vector2d(0.5 * (pos.x - pos.y) - camera.pos.x,  0.5 * (pos.x + pos.y) - pos.z - camera.pos.y);
-	}
+
 	
 	public void setDestination(Vector3d dest){
 		destination = dest;
@@ -71,6 +69,7 @@ public class Entity implements Comparable{
 	public void update(GameContainer container, double delta) {
 		
 		if (pos.distanceTo(destination) > delta * speed) { // Not at the destination yet
+			orientation = pos.angleTo(destination);
 			pos = pos.add(pos.fromOther(destination).normalize().mul(delta * speed));
 			
 		} else {
@@ -80,7 +79,7 @@ public class Entity implements Comparable{
 	}
 	
 	public void draw(Camera camera) {
-		Vector2d drawPos = IsoToEuc(camera);
+		Vector2d drawPos = IsoFuncs.IsoToEuc(pos, camera);
 		sprites[(int) (orientation * numFrames) % numFrames].draw((float) drawPos.x, (float) drawPos.y);
 	}
 

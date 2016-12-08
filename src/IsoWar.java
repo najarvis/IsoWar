@@ -1,13 +1,13 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-import org.newdawn.slick.Animation;
 import org.newdawn.slick.AppGameContainer;
 import org.newdawn.slick.BasicGame;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
+import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
 public class IsoWar extends BasicGame{
@@ -16,6 +16,7 @@ public class IsoWar extends BasicGame{
 	Image[] redTankFrames;
 	
 	Camera camera;
+	Input input;
 	ArrayList<Entity> entities;
 	final static int WIDTH = 1600,
 			         HEIGHT = 900;
@@ -47,7 +48,7 @@ public class IsoWar extends BasicGame{
 		Image greenUnitImage = new Image("res/Units/GreenUnit.png");
 		Image redUnitImage = new Image("res/Units/RedUnit.png");
 		
-		float scale = 0.15f;
+		float scale = 0.125f;
 		greenTankSheet = greenTankSheet.getScaledCopy(scale);
 		redTankSheet = redTankSheet.getScaledCopy(scale);
 		
@@ -78,6 +79,10 @@ public class IsoWar extends BasicGame{
 			Unit toAdd2 = new Unit(random.nextInt(800), random.nextInt(450), new Image[] {redUnitImage});
 			toAdd2.setDestination(new Vector3d(500, 300));
 			entities.add(toAdd2);
+			
+			Unit toAdd3 = new Unit(random.nextInt(800), random.nextInt(450), new Image[] {greenUnitImage});
+			toAdd3.setDestination(new Vector3d(500, 300));
+			entities.add(toAdd3);
 		}
 		
 	}
@@ -92,8 +97,10 @@ public class IsoWar extends BasicGame{
 	
 	@Override
 	public void update(GameContainer container, int delta) throws SlickException {
+		input = container.getInput();
 		double timePassedSeconds = delta * 0.001;
 		for (Entity e : entities) {
+			e.setDestination(IsoFuncs.EucToIso(new Vector2d(input.getMouseX(), input.getMouseY()), camera));
 			e.update(container, timePassedSeconds);
 		}
 		sortEntities();
@@ -104,7 +111,13 @@ public class IsoWar extends BasicGame{
 		for (Entity e : entities) {
 			e.draw(camera);
 		}
+		
+		Input input = container.getInput();
 	}
+	
+	
+
+	
 	
 	/* Quicksort algorithm, source: Wikipedia
 	 * https://en.wikipedia.org/wiki/Quicksort

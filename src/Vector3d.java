@@ -64,4 +64,9 @@ public class Vector3d {
 	public Vector3d fromOther(Vector3d other) {
 		return other.add(this.mul(-1));
 	}
+	
+	public double angleTo(Vector3d other) {
+		Vector3d between = other.fromOther(this);
+		return ((Math.atan2(between.y, between.x)) / (Math.PI * 2)) + 0.5;
+	}
 }
