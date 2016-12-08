@@ -87,6 +87,17 @@ public class IsoWar extends BasicGame{
 		
 	}
 	
+	private void selectEntity(Vector2d clickPos) {
+		// TODO: Select Entity on mouse click
+		for (Entity e : entities){
+			if (e.testIntersection(clickPos, camera)){
+				e.selected = true;
+				continue;
+			}
+			e.selected = false;
+		}
+	}
+	
 	/* Sorts entities by their position on the screen for rendering
 	 * 
 	 * If an entity is further away from the screen, it should draw behind other objects
@@ -99,9 +110,16 @@ public class IsoWar extends BasicGame{
 	public void update(GameContainer container, int delta) throws SlickException {
 		input = container.getInput();
 		double timePassedSeconds = delta * 0.001;
+		
+		if (input.isMouseButtonDown(input.MOUSE_LEFT_BUTTON)){
+			selectEntity(new Vector2d(input.getMouseX(), input.getMouseY()));
+		}
+		
 		for (Entity e : entities) {
-			e.setDestination(IsoFuncs.EucToIso(new Vector2d(input.getMouseX(), input.getMouseY()), camera));
-			e.update(container, timePassedSeconds);
+			if (e.selected){
+				e.setDestination(IsoFuncs.EucToIso(new Vector2d(input.getMouseX(), input.getMouseY()), camera));
+				e.update(container, timePassedSeconds);
+			}
 		}
 		sortEntities();
 	}
@@ -109,7 +127,7 @@ public class IsoWar extends BasicGame{
 	public void render(GameContainer container, Graphics g) throws SlickException {
 		g.setBackground(Color.pink);
 		for (Entity e : entities) {
-			e.draw(camera);
+			e.draw(camera, g);
 		}
 		
 		Input input = container.getInput();

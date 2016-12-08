@@ -1,6 +1,6 @@
 import org.newdawn.slick.GameContainer;
+import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
-import org.newdawn.slick.Input;
 
 public class Entity implements Comparable{
 	
@@ -78,8 +78,21 @@ public class Entity implements Comparable{
 		}
 	}
 	
-	public void draw(Camera camera) {
+	public boolean testIntersection(Vector2d testPos, Camera camera){
+		Vector2d drawPos = IsoFuncs.IsoToEuc(pos, camera); // Basic box collision
+		if (drawPos.x < testPos.x && testPos.x < drawPos.x + sprites[0].getWidth() &&
+				drawPos.y < testPos.y && testPos.y < drawPos.y + sprites[0].getHeight())
+			return true;
+		
+		return false;
+		
+	}
+	
+	public void draw(Camera camera, Graphics g) {
 		Vector2d drawPos = IsoFuncs.IsoToEuc(pos, camera);
+		if (selected)
+			g.fillOval((float)(drawPos.x - (sprites[0].getWidth() * 0.25)), (float)(drawPos.y + sprites[0].getHeight() / 4), (float)(sprites[0].getWidth() * 1.5), sprites[0].getHeight());
+		
 		sprites[(int) (orientation * numFrames) % numFrames].draw((float) drawPos.x, (float) drawPos.y);
 	}
 
