@@ -21,8 +21,9 @@ public abstract class Entity implements Comparable{
 	private int numFrames;
 	
 	public boolean selected;
+	public boolean controllable;
 	
-	public Entity(Vector3d pos, Image[] sprites, double orientation) {
+	public Entity(Vector3d pos, Image[] sprites, double orientation, boolean controllable) {
 		this.pos = pos;
 		this.sprites = sprites;
 		this.numFrames = sprites.length;
@@ -37,23 +38,24 @@ public abstract class Entity implements Comparable{
 		
 		// AI stuff down here
 		this.destination = this.pos.clone();
+		this.controllable = controllable;
 		this.speed = 50; // Pixels per second
 		
 	}
 	
 	// No provided orientation
-	public Entity(Vector3d pos, Image[] sprites) {
-		this(pos, sprites, 0);
+	public Entity(Vector3d pos, Image[] sprites, boolean controllable) {
+		this(pos, sprites, 0, controllable);
 	}
 	
 	// Position in component form
-	public Entity(double x, double y, Image[] sprites, double orientation) {
-		this(new Vector3d(x, y), sprites, orientation);
+	public Entity(double x, double y, Image[] sprites, double orientation, boolean controllable) {
+		this(new Vector3d(x, y), sprites, orientation, controllable);
 	}
 	
 	// Position in component form and no provided orientation
-	public Entity(double x, double y, Image[] sprites){
-		this(new Vector3d(x, y), sprites, 0);
+	public Entity(double x, double y, Image[] sprites, boolean controllable){
+		this(new Vector3d(x, y), sprites, 0, controllable);
 	}
 	
 	public abstract Entity clone();
@@ -76,8 +78,8 @@ public abstract class Entity implements Comparable{
 			pos = pos.add(pos.fromOther(destination).normalize().mul(delta * speed));
 			
 		} else {
-			orientation += (delta);
-			if (orientation > 1) orientation -= (int) orientation;
+//			orientation += (delta);
+//			if (orientation > 1) orientation -= (int) orientation;
 		}
 	}
 	
@@ -155,8 +157,9 @@ public abstract class Entity implements Comparable{
 	@Override
 	public int compareTo(Object o) {
 		if (!(o instanceof Entity)) return 0;
-		Vector3d thisTestPos = new Vector3d(this.pos.x + this.sprites[0].getWidth() / 2, this.pos.y + this.sprites[0].getHeight());
-		Vector3d oTestPos = new Vector3d(((Entity)o).pos.x + ((Entity)o).sprites[0].getWidth() / 2, ((Entity)o).pos.y + ((Entity)o).sprites[0].getHeight());
+		// We add negative one half of the dimensions of the Entity because it draws from the center, not the top left corner.
+		Vector3d thisTestPos = new Vector3d(this.pos.x + this.sprites[0].getWidth() / 2, this.pos.y + this.sprites[0].getHeight()).add(dimensions.mul(-0.5));
+		Vector3d oTestPos = new Vector3d(((Entity)o).pos.x + ((Entity)o).sprites[0].getWidth() / 2, ((Entity)o).pos.y + ((Entity)o).sprites[0].getHeight()).add(((Entity)o).dimensions.mul(-0.5));
 		return (int) (((thisTestPos.x + thisTestPos.y) - (oTestPos.x + oTestPos.y)) * 1000);
 	}
 	

@@ -2,23 +2,21 @@ import org.newdawn.slick.Image;
 
 public class Building extends Entity {
 
-	public Building(Vector3d pos, Image[] sprites, double orientation) {
-		super(pos, sprites, orientation);
+	public Building(Vector3d pos, Image[] sprites, double orientation, boolean controllable) {
+		super(pos, sprites, orientation, controllable);
 		this.speed = 0;
 	}
 
-	public Building(double x, double y, Image[] sprites, double orientation){
-		this(new Vector3d(x, y), sprites, orientation);
+	public Building(double x, double y, Image[] sprites, double orientation, boolean controllable){
+		this(new Vector3d(x, y), sprites, orientation, controllable);
 	}
 	
-	public Building(double x, double y, Image[] sprites){
-		this(new Vector3d(x, y), sprites, 0);
+	public Building(double x, double y, Image[] sprites, boolean controllable){
+		this(new Vector3d(x, y), sprites, 0, controllable);
 	}
 
-	@Override
 	public Entity clone() {
-		globalID -= 1;
-		return new Building(pos, sprites, orientation);
+		return new Building(pos, sprites, orientation, controllable);
 	}
 
 }

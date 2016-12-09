@@ -28,6 +28,9 @@ public class IsoWar extends BasicGame{
 	
 	static AppGameContainer app;
 	
+	Player player;
+	Player computer;
+	
 	public IsoWar() {
 		super("IsoWar!");
 	}
@@ -55,13 +58,15 @@ public class IsoWar extends BasicGame{
 		EntityInfo RT = EntityInfo.RedTank;
 		EntityInfo RU = EntityInfo.RedUnit;
 		EntityInfo RB = EntityInfo.RedBase;
+		
 				
 		// Add tiles
 		tiles = new ArrayList<IsoTile>();
 		
+		//TODO: Fix this so the tiles look normal
 		for (int y = -15; y < 15; y++){
 			for (int x = -15; x < 15; x++){
-				IsoTile toAdd = new IsoTile(new Vector3d(x * 128, y * 128), "DarkBase.png");
+				IsoTile toAdd = new IsoTile(new Vector3d(x * 190, y * 128), "DarkBase.png");
 				tiles.add(toAdd);
 			}
 		}
@@ -69,25 +74,31 @@ public class IsoWar extends BasicGame{
 		// Add entities
 		entities = new ArrayList<Entity>();
 		
+		/*
 		// Single tank for testing
 		entities.add(RT.generateEntity(20, 20));
 		
 		// Testing adding lots of entities
-		for (int i = 0; i < 3; i++){
+		for (int i = 0; i < 0; i++){
 			entities.add(GT.generateEntity(random.nextInt(800), random.nextInt(450)));
 			entities.add(GU.generateEntity(random.nextInt(800), random.nextInt(450)));
 			entities.add(RU.generateEntity(random.nextInt(800), random.nextInt(450)));
 		}
-
+		*/
+		
 		// Main Buildings
-		entities.add(GB.generateEntity(-450, 450));
-		entities.add(RB.generateEntity(1150, 450));
+		entities.add(GB.generateEntity(-450, 450)); // Green Base (player)
+		entities.add(RB.generateEntity(1150, 450)); // Red Base (enemy)
+		
+
+		player = new Player(new Vector3d(-450, 450), new Vector3d(1150, 450), true);
+		computer = new Player(new Vector3d(1150, 450), new Vector3d(-450, 450), false);
 		
 	}
 	
 	private void selectEntity(Vector3d clickPos) {
 		for (Entity e : entities){
-			if (e.testIntersection(clickPos, camera)){
+			if (e.controllable && e.testIntersection(clickPos, camera)){
 				e.selected = true;
 				continue;
 			}
@@ -108,15 +119,25 @@ public class IsoWar extends BasicGame{
 		input = container.getInput();
 		double timePassedSeconds = delta * 0.001;
 		
+		// Select an entity
 		if (input.isMouseButtonDown(input.MOUSE_LEFT_BUTTON)){
 			selectEntity(new Vector3d(input.getMouseX(), input.getMouseY()));
 		}
 		
-		for (Entity e : entities) {
-			if (e.selected){
-				e.setDestination(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera));
-				e.update(container, timePassedSeconds);
+		// Order an entity somewhere
+		if (input.isMouseButtonDown(input.MOUSE_RIGHT_BUTTON)){
+			for (Entity e : entities) {
+				if (e.selected && e.controllable){
+					e.setDestination(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera));
+				}
 			}
+		}
+		
+		player.update(entities, timePassedSeconds, input);
+		computer.update(entities, timePassedSeconds, input);
+		
+		for (Entity e : entities) {
+			e.update(container, timePassedSeconds);
 		}
 		
 		app.setTitle(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera).toString());
