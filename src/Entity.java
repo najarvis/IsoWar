@@ -2,13 +2,17 @@ import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 
+import OldFiles.Vector2d;
+
 public abstract class Entity implements Comparable{
 	
 	public Vector3d pos;
 	public Vector3d destination;
 	
+	
 	public double orientation;
 	public Image[] sprites;
+	public Vector3d dimensions;
 	
 	protected static int globalID = 0;
 	public int id;
@@ -28,6 +32,8 @@ public abstract class Entity implements Comparable{
 		this.id = globalID;
 
 		this.selected = false;
+		
+		this.dimensions = new Vector3d(sprites[0].getWidth(), sprites[0].getHeight());
 		
 		// AI stuff down here
 		this.destination = this.pos.clone();
@@ -49,6 +55,8 @@ public abstract class Entity implements Comparable{
 	public Entity(double x, double y, Image[] sprites){
 		this(new Vector3d(x, y), sprites, 0);
 	}
+	
+	public abstract Entity clone();
 	
 	@Override
 	public String toString() {
@@ -73,8 +81,8 @@ public abstract class Entity implements Comparable{
 		}
 	}
 	
-	public boolean testIntersection(Vector2d testPos, Camera camera){
-		Vector2d drawPos = IsoFuncs.IsoToEuc(pos, camera); // Basic box collision
+	public boolean testIntersection(Vector3d testPos, Camera camera){
+		Vector3d drawPos = IsoFuncs.IsoToEuc(pos, camera).add(dimensions.mul(-0.5)); // Basic box collision
 		if (drawPos.x < testPos.x && testPos.x < drawPos.x + sprites[0].getWidth() &&
 				drawPos.y < testPos.y && testPos.y < drawPos.y + sprites[0].getHeight())
 			return true;
@@ -84,18 +92,71 @@ public abstract class Entity implements Comparable{
 	}
 	
 	public void draw(Camera camera, Graphics g) {
-		Vector2d drawPos = IsoFuncs.IsoToEuc(pos, camera);
+		Vector3d drawPos = IsoFuncs.IsoToEuc(pos, camera).add(dimensions.mul(-0.5));
 		if (selected)
 			g.fillOval((float)(drawPos.x - (sprites[0].getWidth() * 0.25)), (float)(drawPos.y + sprites[0].getHeight() / 4), (float)(sprites[0].getWidth() * 1.5), sprites[0].getHeight());
 		
 		sprites[(int) (orientation * numFrames) % numFrames].draw((float) drawPos.x, (float) drawPos.y);
 	}
 
+	// Getters and setters below here
+	public Vector3d getPos() {
+		return pos;
+	}
+
+	public void setPos(Vector3d pos) {
+		this.pos = pos;
+	}
+
+	public double getOrientation() {
+		return orientation;
+	}
+
+	public void setOrientation(double orientation) {
+		this.orientation = orientation;
+	}
+
+	public Image[] getSprites() {
+		return sprites;
+	}
+
+	public void setSprites(Image[] sprites) {
+		this.sprites = sprites;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getSpeed() {
+		return speed;
+	}
+
+	public void setSpeed(int speed) {
+		this.speed = speed;
+	}
+
+	public boolean isSelected() {
+		return selected;
+	}
+
+	public void setSelected(boolean selected) {
+		this.selected = selected;
+	}
+
+	public Vector3d getDestination() {
+		return destination;
+	}
+
 	@Override
 	public int compareTo(Object o) {
 		if (!(o instanceof Entity)) return 0;
-		Vector2d thisTestPos = new Vector2d(this.pos.x + this.sprites[0].getWidth() / 2, this.pos.y + this.sprites[0].getHeight());
-		Vector2d oTestPos = new Vector2d(((Entity)o).pos.x + ((Entity)o).sprites[0].getWidth() / 2, ((Entity)o).pos.y + ((Entity)o).sprites[0].getHeight());
+		Vector3d thisTestPos = new Vector3d(this.pos.x + this.sprites[0].getWidth() / 2, this.pos.y + this.sprites[0].getHeight());
+		Vector3d oTestPos = new Vector3d(((Entity)o).pos.x + ((Entity)o).sprites[0].getWidth() / 2, ((Entity)o).pos.y + ((Entity)o).sprites[0].getHeight());
 		return (int) (((thisTestPos.x + thisTestPos.y) - (oTestPos.x + oTestPos.y)) * 1000);
 	}
 	

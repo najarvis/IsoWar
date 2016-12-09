@@ -19,4 +19,10 @@ public class Unit extends Entity {
 		this(pos, sprites, 0);
 	}
 
+	@Override
+	public Entity clone() {
+		globalID -= 1;
+		return new Unit(pos, sprites, orientation);
+	}
+
 }

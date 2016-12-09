@@ -1,17 +1,19 @@
+import OldFiles.Vector2d;
+
 public class Camera {
 
-	public Vector2d pos;
+	public Vector3d pos;
 	
-	public Camera(Vector2d pos) {
+	public Camera(Vector3d pos) {
 		this.pos = pos;
 	}
 	
 	public Camera(double x, double y) {
-		this(new Vector2d(x, y));
+		this(new Vector3d(x, y));
 	}
 	
 	public Camera(){
-		this(new Vector2d());
+		this(new Vector3d());
 	}
 	
 }

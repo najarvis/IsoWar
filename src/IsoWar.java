@@ -10,6 +10,8 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
+import OldFiles.Vector2d;
+
 public class IsoWar extends BasicGame{
 	
 	Image[] greenTankFrames;
@@ -22,7 +24,7 @@ public class IsoWar extends BasicGame{
 	ArrayList<IsoTile> tiles;
 	
 	final static int WIDTH = 1600,
-			         HEIGHT = 900;
+			         HEIGHT = 800;
 	
 	static AppGameContainer app;
 	
@@ -45,30 +47,15 @@ public class IsoWar extends BasicGame{
 		Random random = new Random();
 		camera = new Camera(-WIDTH / 2, 0);
 		
-		Image greenTankSheet = new Image("res/Tanks/GreenTankSheet.png");
-		Image redTankSheet = new Image("res/Tanks/RedTankSheet.png");
+		// Set up all the entities.
+		EntityInfo GT = EntityInfo.GreenTank;
+		EntityInfo GU = EntityInfo.GreenUnit;
+		EntityInfo GB = EntityInfo.GreenBase;
 		
-		Image greenUnitImage = new Image("res/Units/GreenUnit.png");
-		Image redUnitImage = new Image("res/Units/RedUnit.png");
-		
-		
-		float scale = 0.25f;
-		greenTankSheet = greenTankSheet.getScaledCopy(scale);
-		redTankSheet = redTankSheet.getScaledCopy(scale);
-		
-		greenTankFrames = new Image[8];
-		redTankFrames = new Image[8];
-		
-		for (int i = 0; i < 8; i++) {
-			greenTankFrames[i] = (greenTankSheet.getSubImage((int) (i * 256 * scale), 0, (int) (256 * scale), (int) (192 * scale)));
-			redTankFrames[i] = (redTankSheet.getSubImage((int) (i * 256 * scale), 0, (int) (256 * scale), (int) (192 * scale)));
-		}
-		
-		scale = 0.5f;
-		greenUnitImage = greenUnitImage.getScaledCopy(scale);
-		redUnitImage = redUnitImage.getScaledCopy(scale);
-
-		
+		EntityInfo RT = EntityInfo.RedTank;
+		EntityInfo RU = EntityInfo.RedUnit;
+		EntityInfo RB = EntityInfo.RedBase;
+				
 		// Add tiles
 		tiles = new ArrayList<IsoTile>();
 		
@@ -81,40 +68,24 @@ public class IsoWar extends BasicGame{
 		
 		// Add entities
 		entities = new ArrayList<Entity>();
-		Tank testing = new Tank(20, 20, redTankFrames);
-		testing.setDestination(new Vector3d(500, 300));
-		entities.add(testing);
 		
-		for (int i = 0; i < 10; i++){
-			Tank toAdd = new Tank(random.nextInt(800), random.nextInt(450), greenTankFrames);
-			toAdd.setDestination(new Vector3d(500, 300));
-			entities.add(toAdd);
-			
-			Unit toAdd2 = new Unit(random.nextInt(800), random.nextInt(450), new Image[] {redUnitImage});
-			toAdd2.setDestination(new Vector3d(500, 300));
-			entities.add(toAdd2);
-			
-			Unit toAdd3 = new Unit(random.nextInt(800), random.nextInt(450), new Image[] {greenUnitImage});
-			toAdd3.setDestination(new Vector3d(500, 300));
-			entities.add(toAdd3);
+		// Single tank for testing
+		entities.add(RT.generateEntity(20, 20));
+		
+		// Testing adding lots of entities
+		for (int i = 0; i < 3; i++){
+			entities.add(GT.generateEntity(random.nextInt(800), random.nextInt(450)));
+			entities.add(GU.generateEntity(random.nextInt(800), random.nextInt(450)));
+			entities.add(RU.generateEntity(random.nextInt(800), random.nextInt(450)));
 		}
 
-		Image greenBuildingImage = new Image("res/Buildings/GreenBase.png");
-		greenBuildingImage = greenBuildingImage.getScaledCopy(0.5f);
-		
-		Image redBuildingImage = new Image("res/Buildings/RedBase.png");
-		redBuildingImage = redBuildingImage.getScaledCopy(0.5f);
-				
 		// Main Buildings
-		Building greenBase = new Building(IsoFuncs.EucToIso(new Vector2d(WIDTH - (redBuildingImage.getWidth() + 20), HEIGHT / 2 - redBuildingImage.getHeight() / 2), camera), new Image[] {greenBuildingImage}, 0);
-		entities.add(greenBase);
-		
-		Building redBase = new Building(IsoFuncs.EucToIso(new Vector2d(20, HEIGHT / 2 - redBuildingImage.getHeight() / 2), camera), new Image[] {redBuildingImage}, 0);
-		entities.add(redBase);
+		entities.add(GB.generateEntity(-450, 450));
+		entities.add(RB.generateEntity(1150, 450));
 		
 	}
 	
-	private void selectEntity(Vector2d clickPos) {
+	private void selectEntity(Vector3d clickPos) {
 		for (Entity e : entities){
 			if (e.testIntersection(clickPos, camera)){
 				e.selected = true;
@@ -138,17 +109,17 @@ public class IsoWar extends BasicGame{
 		double timePassedSeconds = delta * 0.001;
 		
 		if (input.isMouseButtonDown(input.MOUSE_LEFT_BUTTON)){
-			selectEntity(new Vector2d(input.getMouseX(), input.getMouseY()));
+			selectEntity(new Vector3d(input.getMouseX(), input.getMouseY()));
 		}
 		
 		for (Entity e : entities) {
 			if (e.selected){
-				e.setDestination(IsoFuncs.EucToIso(new Vector2d(input.getMouseX(), input.getMouseY()), camera));
+				e.setDestination(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera));
 				e.update(container, timePassedSeconds);
 			}
 		}
 		
-		app.setTitle(IsoFuncs.EucToIso(new Vector2d(input.getMouseX(), input.getMouseY()), camera).toString());
+		app.setTitle(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera).toString());
 		
 		sortEntities();
 	}

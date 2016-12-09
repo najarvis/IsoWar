@@ -15,4 +15,10 @@ public class Building extends Entity {
 		this(new Vector3d(x, y), sprites, 0);
 	}
 
+	@Override
+	public Entity clone() {
+		globalID -= 1;
+		return new Building(pos, sprites, orientation);
+	}
+
 }

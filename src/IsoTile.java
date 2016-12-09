@@ -1,5 +1,7 @@
 import org.newdawn.slick.SlickException;
 
+import OldFiles.Vector2d;
+
 public class IsoTile extends Tile {
 	/*        .   <>             | The values inside of the parenthesis are the coordinates
 	 *        < (0,0)  >         | in terms of indexes in an array.
@@ -19,7 +21,7 @@ public class IsoTile extends Tile {
 	}
 	
 	public void render(Camera camera){
-		Vector2d drawPos = IsoFuncs.IsoToEuc(pos, camera);
+		Vector3d drawPos = IsoFuncs.IsoToEuc(pos, camera);
 		image.draw((float)drawPos.x, (float)drawPos.y);
 	}
 
