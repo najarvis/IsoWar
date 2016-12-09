@@ -4,9 +4,11 @@ import org.newdawn.slick.Input;
 
 public class Player {
 
-	int resources;
+	double resources;
 	int unitCost = 5;
 	int tankCost = 25;
+	
+	int health = 100;
 	
 	double unitCooldown = 0;
 	double unitCooldownMax = 0.5;
@@ -17,10 +19,12 @@ public class Player {
 	
 	Vector3d basePos;
 	Vector3d otherBasePos;
+	Vector3d generatePos;
 	
 	public Player(Vector3d basePos, Vector3d otherBasePos, boolean control){
 		this.basePos = basePos;
 		this.otherBasePos = otherBasePos;
+		generatePos = basePos.add(basePos.fromOther(otherBasePos).normalize().mul(150));
 		
 		this.resources = 100;
 		
@@ -29,10 +33,10 @@ public class Player {
 	}
 	
 	public void update(ArrayList<Entity> entities, double delta, Input input){
-		if (this.resources < 200)
-			this.resources += delta;
-		if (this.resources > 200)
-			this.resources = 200;
+		if (resources < 200)
+			resources += delta * 2;
+		if (resources > 200)
+			resources = 200;
 		
 		tankCooldown -= delta;
 		if (tankCooldown < 0) tankCooldown = 0;
@@ -41,16 +45,39 @@ public class Player {
 		if (unitCooldown < 0) unitCooldown = 0;
 		
 		
-		// AI makes it's decisions
+		// If you aren't in control, the AI makes it's decisions
 		if (!control)
 			makeDecisions(entities);
 		else
+			// Player makes his decisions
 			checkInput(entities, input);
 	}
 	
 	// What the player does
 	private void checkInput(ArrayList<Entity> entities, Input input){
+		EntityInfo GU = EntityInfo.GreenUnit;
+		EntityInfo GT = EntityInfo.GreenTank;
 		
+		// Press the T key, and as long as you've got the resources a tank pops out.
+		if (input.isKeyDown(input.KEY_T) && tankCooldown <= 0 && resources >= tankCost){
+			Entity toAdd = GT.generateEntity(generatePos);
+			toAdd.setDestination(otherBasePos);
+			
+			entities.add(toAdd);
+			
+			resources -= tankCost;
+			tankCooldown = tankCooldownMax;
+		}
+		
+		if (input.isKeyDown(input.KEY_U) && unitCooldown <= 0 && resources >= unitCost){
+			Entity toAdd = GU.generateEntity(generatePos);
+			toAdd.setDestination(otherBasePos);
+			
+			entities.add(toAdd);
+			
+			resources -= unitCost;
+			unitCooldown = unitCooldownMax;
+		}
 	}
 	
 	// What the AI does
@@ -71,15 +98,15 @@ public class Player {
 				numTanks += 1;
 		}
 		
-		if (numUnits < 5)
+		if (numUnits < 0)
 			wantToMakeUnit = true;
 		
-		if (numTanks < 2)
+		if (numTanks < 5)
 			wantToMakeTank = true;
 		
 		if (wantToMakeUnit && resources > unitCost && unitCooldown <= 0){
 			//Make Unit
-			Entity toAdd = RU.generateEntity(basePos);
+			Entity toAdd = RU.generateEntity(generatePos);
 			toAdd.destination = otherBasePos.clone();
 			
 			entities.add(toAdd);
@@ -90,7 +117,7 @@ public class Player {
 		
 		if (wantToMakeTank && resources > tankCost && tankCooldown <= 0){
 			//Make Tank
-			Entity toAdd = RT.generateEntity(basePos);
+			Entity toAdd = RT.generateEntity(generatePos);
 			toAdd.destination = otherBasePos.clone();
 			
 			entities.add(toAdd);

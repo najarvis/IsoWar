@@ -1,8 +1,8 @@
+import java.util.ArrayList;
+
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
-
-import OldFiles.Vector2d;
 
 public abstract class Entity implements Comparable{
 	
@@ -18,7 +18,11 @@ public abstract class Entity implements Comparable{
 	public int id;
 	
 	public int speed;
+	public int range;
+	public int health;
+	
 	private int numFrames;
+	
 	
 	public boolean selected;
 	public boolean controllable;
@@ -40,6 +44,8 @@ public abstract class Entity implements Comparable{
 		this.destination = this.pos.clone();
 		this.controllable = controllable;
 		this.speed = 50; // Pixels per second
+		this.range = 15;  // How far away it can attack something
+		this.health = 5;
 		
 	}
 	
@@ -65,7 +71,16 @@ public abstract class Entity implements Comparable{
 		return "ENTITY - ID: " + id + "/" + globalID + ", Position: " + pos + ", Orientation: " + orientation;
 	}
 	
-
+	public void checkCollision(ArrayList<Entity> entities){
+		for (Entity e: entities){
+			if (pos.distanceTo(e.pos) <= range){
+				handleCollision(e);
+			}
+			
+		}
+	}
+	
+	public abstract void handleCollision(Entity e);
 	
 	public void setDestination(Vector3d dest){
 		destination = dest;

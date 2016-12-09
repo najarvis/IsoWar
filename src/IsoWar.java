@@ -1,3 +1,4 @@
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -31,6 +32,10 @@ public class IsoWar extends BasicGame{
 	Player player;
 	Player computer;
 	
+	
+	final static int NOWIN = 0, PLAYERWIN = 1, COMPUTERWIN = 2;
+	int GAMEFLAG = NOWIN;
+	
 	public IsoWar() {
 		super("IsoWar!");
 	}
@@ -45,21 +50,126 @@ public class IsoWar extends BasicGame{
 		}
 	}
 	
+	public void saveLevel(String filename){
+		/*
+		 * Levels are saved as the following:
+		 * 
+		 * player base position
+		 * computer base position <- We can create both players from just these two data points
+		 * number of tanks
+		 * tanks
+		 * number of units
+		 * units
+		 * 
+		 */
+		
+		try{
+			ArrayList<Entity> tanks = new ArrayList<Entity>();
+			ArrayList<Entity> units = new ArrayList<Entity>();
+			
+			for (Entity e : entities){
+				if (e instanceof Tank)
+					tanks.add(e);
+				if (e instanceof Unit)
+					units.add(e);
+			}
+			
+			
+			RandomAccessFile raf = new RandomAccessFile(filename, "rw");
+			
+			raf.writeDouble(player.basePos.x);
+			raf.writeDouble(player.basePos.y);
+			raf.writeDouble(player.otherBasePos.x);
+			raf.writeDouble(player.otherBasePos.y);
+			
+			// Number of units
+			raf.writeInt(tanks.size());
+			for (Entity t : tanks){
+				raf.writeDouble(t.pos.x);
+				raf.writeDouble(t.pos.y);
+				raf.writeBoolean(t.controllable);
+			}
+			
+			raf.writeInt(units.size());
+			for (Entity u : units){
+				raf.writeDouble(u.pos.x);
+				raf.writeDouble(u.pos.y);
+				raf.writeBoolean(u.controllable);
+			}
+			
+			
+		} catch (Exception e) {}
+	}
+	
+	public void loadLevel(String filename){
+		entities = new ArrayList<Entity>();
+		
+		try {
+			EntityInfo GU = EntityInfo.GreenUnit;
+			EntityInfo RU = EntityInfo.RedUnit;
+
+			EntityInfo GT = EntityInfo.GreenTank;
+			EntityInfo RT = EntityInfo.RedTank;
+			
+			EntityInfo GB = EntityInfo.GreenBase;
+			EntityInfo RB = EntityInfo.RedBase;
+			
+			RandomAccessFile raf = new RandomAccessFile(filename, "rw");
+			
+			double pbpx = raf.readDouble();
+			double pbpy = raf.readDouble();
+			double pobpx = raf.readDouble();
+			double pobpy = raf.readDouble();
+			
+			player = new Player(new Vector3d(pbpx, pbpy), new Vector3d(pobpx, pobpy), true);
+			computer = new Player(new Vector3d(pobpx, pobpy), new Vector3d(pbpx, pbpy), false);
+
+			entities.add(GB.generateEntity(new Vector3d(pbpx, pbpy)));
+			entities.add(RB.generateEntity(new Vector3d(pobpx, pobpy)));
+			
+			int numTanks = raf.readInt();
+			for (int i = 0; i < numTanks; i++){
+				double tpx = raf.readDouble();
+				double tpy = raf.readDouble();
+				boolean tc = raf.readBoolean();
+				Entity toAdd;
+				if (tc){
+					toAdd = GT.generateEntity(new Vector3d(tpx, tpy));
+					toAdd.destination = new Vector3d(pobpx, pobpy);
+				}
+				else {
+					toAdd = RT.generateEntity(new Vector3d(tpx, tpy));
+					toAdd.destination = new Vector3d(pbpx, pbpy);
+				}
+				entities.add(toAdd);
+			}
+			int numUnits = raf.readInt();
+			for (int i = 0; i < numUnits; i++){
+				double upx = raf.readDouble();
+				double upy = raf.readDouble();
+				boolean uc = raf.readBoolean();
+				Entity toAdd;
+				if (uc){
+					toAdd = GU.generateEntity(new Vector3d(upx, upy));
+					toAdd.destination = new Vector3d(pobpx, pobpy);
+				}
+				else {
+					toAdd = RU.generateEntity(new Vector3d(upx, upy));
+					toAdd.destination = new Vector3d(pbpx, pbpy);
+				}
+				entities.add(toAdd);
+			}
+			
+			GAMEFLAG = NOWIN;
+			
+		} catch(Exception e) {}
+	}
+	
 	@Override
 	public void init(GameContainer container) throws SlickException {
 		Random random = new Random();
-		camera = new Camera(-WIDTH / 2, 0);
-		
-		// Set up all the entities.
-		EntityInfo GT = EntityInfo.GreenTank;
-		EntityInfo GU = EntityInfo.GreenUnit;
-		EntityInfo GB = EntityInfo.GreenBase;
-		
-		EntityInfo RT = EntityInfo.RedTank;
-		EntityInfo RU = EntityInfo.RedUnit;
-		EntityInfo RB = EntityInfo.RedBase;
-		
-				
+		camera = new Camera(-WIDTH / 2, 0); // Position the camera so everything is centered
+
 		// Add tiles
 		tiles = new ArrayList<IsoTile>();
 		
@@ -71,28 +181,9 @@ public class IsoWar extends BasicGame{
 			}
 		}
 		
-		// Add entities
-		entities = new ArrayList<Entity>();
 		
-		/*
-		// Single tank for testing
-		entities.add(RT.generateEntity(20, 20));
-		
-		// Testing adding lots of entities
-		for (int i = 0; i < 0; i++){
-			entities.add(GT.generateEntity(random.nextInt(800), random.nextInt(450)));
-			entities.add(GU.generateEntity(random.nextInt(800), random.nextInt(450)));
-			entities.add(RU.generateEntity(random.nextInt(800), random.nextInt(450)));
-		}
-		*/
-		
-		// Main Buildings
-		entities.add(GB.generateEntity(-450, 450)); // Green Base (player)
-		entities.add(RB.generateEntity(1150, 450)); // Red Base (enemy)
-		
-
-		player = new Player(new Vector3d(-450, 450), new Vector3d(1150, 450), true);
-		computer = new Player(new Vector3d(1150, 450), new Vector3d(-450, 450), false);
+		loadLevel("MainLevel.bin");
+		//saveLevel("MainLevel.bin");
 		
 	}
 	
@@ -133,40 +224,85 @@ public class IsoWar extends BasicGame{
 			}
 		}
 		
-		player.update(entities, timePassedSeconds, input);
-		computer.update(entities, timePassedSeconds, input);
+		// Can't update if the base doesn't exist
+		if (GAMEFLAG != COMPUTERWIN){
+			player.update(entities, timePassedSeconds, input);
+		}
+		
+		if (GAMEFLAG != PLAYERWIN){
+			computer.update(entities, timePassedSeconds, input);
+		}
+		
+		ArrayList<Entity> toRemove = new ArrayList<Entity>();
 		
 		for (Entity e : entities) {
 			e.update(container, timePassedSeconds);
+			e.checkCollision(entities);
+			if (e.health <= 0)
+				toRemove.add(e);
 		}
 		
-		app.setTitle(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera).toString());
+		for (Entity e : toRemove){
+			if (e instanceof Building){
+				if (e.controllable)
+					GAMEFLAG = COMPUTERWIN;
+				if (!e.controllable)
+					GAMEFLAG = PLAYERWIN;
+			}
+			entities.remove(e);
+			e = null;
+		}
+		
+		// The player has won, do something
+		if (GAMEFLAG == PLAYERWIN){
+			if (input.isKeyDown(input.KEY_SPACE))
+				loadLevel("MainLevel.bin");
+		}
+		
+		// The player has lost, do something
+		if (GAMEFLAG == COMPUTERWIN){
+			if (input.isKeyDown(input.KEY_SPACE))
+				loadLevel("MainLevel.bin");
+		}
+		
+		// Debugging
+		//app.setTitle(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera).toString() + " Resources: " + player.resources);
+		
+		app.setTitle("Resources: " + player.resources);
 		
 		sortEntities();
 	}
 	
 	public void render(GameContainer container, Graphics g) throws SlickException {
+		// A color that I will easily be able to see if there are holes in the ground
 		g.setBackground(Color.pink);
 		
+		// Draw tiles
 		for (IsoTile t : tiles){
 			t.render(camera);
 		}
 		
+		// Draw all the entities (Tanks, Units, Buildings)
 		for (Entity e : entities) {
 			e.draw(camera, g);
 		}
 		
-		Input input = container.getInput();
+		// The player has won, do something
+		if (GAMEFLAG == PLAYERWIN){
+			g.drawString("YOU WIN! Press space to restart", 0, 0);
+		}
+		
+		// The player has lost, do something
+		if (GAMEFLAG == COMPUTERWIN){
+			g.drawString("You lose. Way to suck. Press space to restart", 0, 0);
+		}
 	}
-	
-	
-
-	
 	
 	/* Quicksort algorithm, source: Wikipedia
 	 * https://en.wikipedia.org/wiki/Quicksort
 	 * 
-	 * Quicksort algorithm for Entities. Probably should make this generic, but eh.
+	 * Quicksort algorithm for Entities. Probably should make this generic, but
+	 * currently there is no need
 	 */
 	private void quicksort(ArrayList<Entity> A, int low, int high){
 		if (low < high){
