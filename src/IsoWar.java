@@ -11,8 +11,6 @@ import org.newdawn.slick.Image;
 import org.newdawn.slick.Input;
 import org.newdawn.slick.SlickException;
 
-import OldFiles.Vector2d;
-
 
 /*
  * An "Isometric minimalist Real time strategy game"
