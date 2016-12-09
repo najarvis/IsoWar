@@ -13,6 +13,13 @@ import org.newdawn.slick.SlickException;
 
 import OldFiles.Vector2d;
 
+
+/*
+ * An "Isometric minimalist Real time strategy game"
+ * Create a tank with the 'T' key, 25 resources, 2s. cooldown
+ * Create a unit with the 'U' key, 5 resources, 0.5s. cooldown
+ * Check how many resources you have on the title bar
+ */
 public class IsoWar extends BasicGame{
 	
 	Image[] greenTankFrames;
@@ -235,11 +242,13 @@ public class IsoWar extends BasicGame{
 		
 		ArrayList<Entity> toRemove = new ArrayList<Entity>();
 		
-		for (Entity e : entities) {
-			e.update(container, timePassedSeconds);
-			e.checkCollision(entities);
-			if (e.health <= 0)
-				toRemove.add(e);
+		if (GAMEFLAG == NOWIN){
+			for (Entity e : entities) {
+				e.update(container, timePassedSeconds);
+				e.checkCollision(entities);
+				if (e.health <= 0)
+					toRemove.add(e);
+			}
 		}
 		
 		for (Entity e : toRemove){
@@ -268,8 +277,9 @@ public class IsoWar extends BasicGame{
 		// Debugging
 		//app.setTitle(IsoFuncs.EucToIso(new Vector3d(input.getMouseX(), input.getMouseY()), camera).toString() + " Resources: " + player.resources);
 		
-		app.setTitle("Resources: " + player.resources);
+		//app.setTitle("Resources: " + player.resources);
 		
+		// Sort the entities for drawing
 		sortEntities();
 	}
 	
@@ -286,6 +296,10 @@ public class IsoWar extends BasicGame{
 		for (Entity e : entities) {
 			e.draw(camera, g);
 		}
+
+		g.drawString("Resources: " + (float)player.resources, 0, HEIGHT - 25);
+		g.drawString("Press T to make a tank, cost 25 resources. Cooldown: " + (float)player.tankCooldown, 0, HEIGHT - 45);
+		g.drawString("Press U to make a unit, cost: 5 resources. Cooldown: " + (float)player.unitCooldown, 0, HEIGHT - 65);
 		
 		// The player has won, do something
 		if (GAMEFLAG == PLAYERWIN){
