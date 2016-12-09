@@ -98,10 +98,10 @@ public class Player {
 				numTanks += 1;
 		}
 		
-		if (numUnits < 0)
+		if (numUnits < 7)
 			wantToMakeUnit = true;
 		
-		if (numTanks < 5)
+		if (numTanks < 2)
 			wantToMakeTank = true;
 		
 		if (wantToMakeUnit && resources > unitCost && unitCooldown <= 0){
